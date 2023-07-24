@@ -10,15 +10,36 @@ import SwiftUI
 import UIKit
 #endif
 
+/// A view that allows the user to crop an image.
 public struct CropImageView: View {
-    public enum RenderError: Error {
+    /// Errors that could happen during the cropping process.
+    public enum CropError: Error {
+        /// SwiftUI `ImageRenderer` returned nil when calling `nsImage` or `uiImage`.
+        ///
+        /// See [SwiftUI - ImageRenderer](https://developer.apple.com/documentation/swiftui/imagerenderer) for more information.
         case imageRendererReturnedNil
+        /// `UIGraphicsGetCurrentContext()` call returned `nil`.
+        ///
+        /// It shouldn't happen, but if it does it will only be on iOS versions prior to 16.0.
+        case failedToGetCurrentUIGraphicsContext
+        /// `UIGraphicsGetImageFromCurrentImageContext()` call returned `nil`.
+        ///
+        /// It shouldn't happen, but if it does it will only be on iOS versions prior to 16.0.
+        case failedToGetImageFromCurrentUIGraphicsImageContext
     }
 
-    var image: PlatformImage
-    var targetSize: CGSize
-    var targetScale: CGFloat = 1
-    var onCrop: (Result<PlatformImage, Error>) -> Void
+    /// The image to crop.
+    public var image: PlatformImage
+    /// The intended size of the cropped image, in points.
+    public var targetSize: CGSize
+    /// The intended scale of the cropped image.
+    ///
+    /// This defines the point to pixel ratio for the output image. Defaults to `1`.
+    public var targetScale: CGFloat = 1
+    /// A closure that will be called when the user finishes cropping.
+    ///
+    /// The error should be a ``CropError``.
+    public var onCrop: (Result<PlatformImage, Error>) -> Void
 
     @State private var offset: CGSize = .zero
     @State private var scale: CGFloat = 1
@@ -34,13 +55,13 @@ public struct CropImageView: View {
             if let image = renderer.uiImage {
                 return image
             } else {
-                throw RenderError.imageRendererReturnedNil
+                throw CropError.imageRendererReturnedNil
             }
 #elseif os(macOS)
             if let image = renderer.nsImage {
                 return image
             } else {
-                throw RenderError.imageRendererReturnedNil
+                throw CropError.imageRendererReturnedNil
             }
 #endif
         } else {
@@ -53,9 +74,13 @@ public struct CropImageView: View {
             window.addSubview(hosting.view)
             window.makeKeyAndVisible()
             UIGraphicsBeginImageContextWithOptions(hosting.view.bounds.size, false, targetScale)
-            let context = UIGraphicsGetCurrentContext()!
+            guard let context = UIGraphicsGetCurrentContext() else {
+                throw CropError.failedToGetCurrentUIGraphicsContext
+            }
             hosting.view.layer.render(in: context)
-            let image = UIGraphicsGetImageFromCurrentImageContext()!
+            guard let image = UIGraphicsGetImageFromCurrentImageContext() else {
+                throw CropError.failedToGetImageFromCurrentUIGraphicsImageContext
+            }
             UIGraphicsEndImageContext()
             return image
 #endif
