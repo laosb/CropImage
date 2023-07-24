@@ -1,4 +1,4 @@
-# ``CropImageView``
+# ``CropImage``
 
 A simple SwiftUI view where user can move and resize an image to a pre-defined size.
 
