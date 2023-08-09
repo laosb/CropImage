@@ -11,7 +11,7 @@ import UIKit
 #endif
 
 /// A view that allows the user to crop an image.
-public struct CropImageView: View {
+public struct CropImageView<Controls: View>: View {
     /// Errors that could happen during the cropping process.
     public enum CropError: Error {
         /// SwiftUI `ImageRenderer` returned nil when calling `nsImage` or `uiImage`.
@@ -28,6 +28,29 @@ public struct CropImageView: View {
         case failedToGetImageFromCurrentUIGraphicsImageContext
     }
 
+    private static func defaultControlsView(crop: @escaping () async -> ()) -> AnyView { AnyView(
+        VStack {
+            Spacer()
+            HStack {
+                Spacer()
+                Button { Task {
+                    await crop()
+                } } label: {
+                    Label("Crop", systemImage: "checkmark.circle.fill")
+                        .font(.title2)
+                        .foregroundColor(.accentColor)
+                        .labelStyle(.iconOnly)
+                        .padding(1)
+                        .background(
+                            Circle().fill(.white)
+                        )
+                }
+                .buttonStyle(.plain)
+                .padding()
+            }
+        }
+    ) }
+
     /// The image to crop.
     public var image: PlatformImage
     /// The intended size of the cropped image, in points.
@@ -40,6 +63,41 @@ public struct CropImageView: View {
     ///
     /// The error should be a ``CropError``.
     public var onCrop: (Result<PlatformImage, Error>) -> Void
+    /// A custom view overlaid on the image cropper.
+    ///
+    /// - Parameters:
+    ///   - crop: An async function to trigger crop action. Result will be delivered via ``onCrop``.
+    public var controls: (_ crop: @escaping () async -> ()) -> Controls
+
+    /// Create a ``CropImageView`` with a custom ``controls`` view.
+    public init(
+        image: PlatformImage,
+        targetSize: CGSize,
+        targetScale: CGFloat = 1,
+        onCrop: @escaping (Result<PlatformImage, Error>) -> Void,
+        @ViewBuilder controls: @escaping (_ crop: () async -> ()) -> Controls
+    ) {
+        self.image = image
+        self.targetSize = targetSize
+        self.targetScale = targetScale
+        self.onCrop = onCrop
+        self.controls = controls
+    }
+    /// Create a ``CropImageView`` with the default ``controls`` view.
+    ///
+    /// The default ``controls`` view is a simple overlay with a checkmark icon on the bottom-trailing corner to trigger crop action.
+    public init(
+        image: PlatformImage,
+        targetSize: CGSize,
+        targetScale: CGFloat = 1,
+        onCrop: @escaping (Result<PlatformImage, Error>) -> Void
+    ) where Controls == AnyView {
+        self.image = image
+        self.targetSize = targetSize
+        self.targetScale = targetScale
+        self.onCrop = onCrop
+        self.controls = Self.defaultControlsView
+    }
 
     @State private var offset: CGSize = .zero
     @State private var scale: CGFloat = 1
@@ -94,28 +152,11 @@ public struct CropImageView: View {
                 .fill(style: FillStyle(eoFill: true))
                 .foregroundColor(.black.opacity(0.6))
                 .allowsHitTesting(false)
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    Button { Task {
-                        do {
-                            onCrop(.success(try crop()))
-                        } catch {
-                            onCrop(.failure(error))
-                        }
-                    } } label: {
-                        Label("Crop", systemImage: "checkmark.circle.fill")
-                            .font(.title2)
-                            .foregroundColor(.accentColor)
-                            .labelStyle(.iconOnly)
-                            .padding(1)
-                            .background(
-                                Circle().fill(.white)
-                            )
-                    }
-                    .buttonStyle(.plain)
-                    .padding()
+            controls {
+                do {
+                    onCrop(.success(try crop()))
+                } catch {
+                    onCrop(.failure(error))
                 }
             }
         }
