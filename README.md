@@ -13,8 +13,8 @@ Supports iOS 14.0 and above, or macOS Ventura 13.0 and above.
 - (Optionally) bring your own crop UI
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./Sources/CropImage/Documentation/Resources/macos~dark.png">
-  <img alt="Preview on macOS" src="./Sources/CropImage/Documentation/Resources/macos.png">
+  <source media="(prefers-color-scheme: dark)" srcset="./Sources/CropImage/Documentation.docc/Resources/macos~dark.png">
+  <img alt="Preview on macOS" src="./Sources/CropImage/Documentation.docc/Resources/macos.png">
 </picture>
 
 ## License
