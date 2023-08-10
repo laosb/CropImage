@@ -12,6 +12,13 @@ import UIKit
 
 /// A view that allows the user to crop an image.
 public struct CropImageView<Controls: View>: View {
+    public typealias ControlClosure<Controls> = (
+        _ offset: Binding<CGSize>,
+        _ scale: Binding<CGFloat>,
+        _ rotation: Binding<Angle>,
+        _ crop: @escaping () async -> ()
+    ) -> Controls
+
     /// Errors that could happen during the cropping process.
     public enum CropError: Error {
         /// SwiftUI `ImageRenderer` returned nil when calling `nsImage` or `uiImage`.
@@ -27,29 +34,6 @@ public struct CropImageView<Controls: View>: View {
         /// It shouldn't happen, but if it does it will only be on iOS versions prior to 16.0.
         case failedToGetImageFromCurrentUIGraphicsImageContext
     }
-
-    private static func defaultControlsView(crop: @escaping () async -> ()) -> AnyView { AnyView(
-        VStack {
-            Spacer()
-            HStack {
-                Spacer()
-                Button { Task {
-                    await crop()
-                } } label: {
-                    Label("Crop", systemImage: "checkmark.circle.fill")
-                        .font(.title2)
-                        .foregroundColor(.accentColor)
-                        .labelStyle(.iconOnly)
-                        .padding(1)
-                        .background(
-                            Circle().fill(.white)
-                        )
-                }
-                .buttonStyle(.plain)
-                .padding()
-            }
-        }
-    ) }
 
     /// The image to crop.
     public var image: PlatformImage
@@ -67,7 +51,7 @@ public struct CropImageView<Controls: View>: View {
     ///
     /// - Parameters:
     ///   - crop: An async function to trigger crop action. Result will be delivered via ``onCrop``.
-    public var controls: (_ crop: @escaping () async -> ()) -> Controls
+    public var controls: ControlClosure<Controls>
 
     /// Create a ``CropImageView`` with a custom ``controls`` view.
     public init(
@@ -75,7 +59,7 @@ public struct CropImageView<Controls: View>: View {
         targetSize: CGSize,
         targetScale: CGFloat = 1,
         onCrop: @escaping (Result<PlatformImage, Error>) -> Void,
-        @ViewBuilder controls: @escaping (_ crop: () async -> ()) -> Controls
+        @ViewBuilder controls: @escaping ControlClosure<Controls>
     ) {
         self.image = image
         self.targetSize = targetSize
@@ -91,21 +75,29 @@ public struct CropImageView<Controls: View>: View {
         targetSize: CGSize,
         targetScale: CGFloat = 1,
         onCrop: @escaping (Result<PlatformImage, Error>) -> Void
-    ) where Controls == AnyView {
+    ) where Controls == DefaultControlsView {
         self.image = image
         self.targetSize = targetSize
         self.targetScale = targetScale
         self.onCrop = onCrop
-        self.controls = Self.defaultControlsView
+        self.controls = { $offset, $scale, $rotation, crop in
+            DefaultControlsView(offset: $offset, scale: $scale, rotation: $rotation, crop: crop)
+        }
     }
 
     @State private var offset: CGSize = .zero
     @State private var scale: CGFloat = 1
+    @State private var rotation: Angle = .zero
 
     @MainActor
     func crop() throws -> PlatformImage {
-        let snapshotView = MoveAndScalableImageView(offset: $offset, scale: $scale, image: image)
-            .frame(width: targetSize.width, height: targetSize.height)
+        let snapshotView = UnderlyingImageView(
+            offset: $offset,
+            scale: $scale,
+            rotation: $rotation,
+            image: image
+        )
+        .frame(width: targetSize.width, height: targetSize.height)
         if #available(iOS 16.0, macOS 13.0, *) {
             let renderer = ImageRenderer(content: snapshotView)
             renderer.scale = targetScale
@@ -147,13 +139,18 @@ public struct CropImageView<Controls: View>: View {
 
     public var body: some View {
         ZStack {
-            MoveAndScalableImageView(offset: $offset, scale: $scale, image: image)
+            UnderlyingImageView(
+                offset: $offset,
+                scale: $scale,
+                rotation: $rotation,
+                image: image
+            )
             RectHoleShape(size: targetSize)
                 .fill(style: FillStyle(eoFill: true))
                 .foregroundColor(.black.opacity(0.6))
                 .animation(.default, value: targetSize)
                 .allowsHitTesting(false)
-            controls {
+            controls($offset, $scale, $rotation) {
                 do {
                     onCrop(.success(try crop()))
                 } catch {
