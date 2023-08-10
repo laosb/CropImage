@@ -9,6 +9,7 @@ Supports iOS 14.0 and above, or macOS Ventura 13.0 and above.
 - Supports both iOS and macOS
 - Use `ImageRenderer` to render the cropped image, when possible
 - Very lightweight
+- (Optionally) bring your own crop UI
 
 ![Preview on macOS](macos)
 
