@@ -151,6 +151,7 @@ public struct CropImageView<Controls: View>: View {
             RectHoleShape(size: targetSize)
                 .fill(style: FillStyle(eoFill: true))
                 .foregroundColor(.black.opacity(0.6))
+                .animation(.default, value: targetSize)
                 .allowsHitTesting(false)
             controls {
                 do {

@@ -8,7 +8,13 @@
 import SwiftUI
 
 struct RectHoleShape: Shape {
-    let size: CGSize
+    var size: CGSize
+
+    var animatableData: AnimatablePair<CGFloat, CGFloat> {
+        get { .init(size.width, size.height) }
+        set { size = .init(width: newValue.first, height: newValue.second) }
+    }
+
     func path(in rect: CGRect) -> Path {
         let path = CGMutablePath()
         path.move(to: rect.origin)
