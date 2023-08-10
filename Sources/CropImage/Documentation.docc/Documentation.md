@@ -10,6 +10,8 @@ Supports iOS 14.0 and above, or macOS Ventura 13.0 and above.
 - Use `ImageRenderer` to render the cropped image, when possible
 - Very lightweight
 
+![Preview on macOS](macos)
+
 ## Topics
 
 ### Views

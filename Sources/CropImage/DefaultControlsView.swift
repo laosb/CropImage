@@ -34,7 +34,7 @@ public struct DefaultControlsView: View {
                         .padding(.vertical, 3)
                         .background(
                             RoundedRectangle(cornerRadius: 5, style: .continuous)
-                                .fill(.white)
+                                .fill(.background)
                         )
                 }
                 .buttonStyle(.plain)
@@ -59,7 +59,7 @@ public struct DefaultControlsView: View {
                         .labelStyle(.iconOnly)
                         .padding(1)
                         .background(
-                            Circle().fill(.white)
+                            Circle().fill(.background)
                         )
                 }
                 .buttonStyle(.plain)
