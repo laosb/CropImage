@@ -18,6 +18,7 @@ struct UnderlyingImageView: View {
     @Binding var scale: CGFloat
     @Binding var rotation: Angle
     var image: PlatformImage
+    var initialImageSize: CGSize
 
     @State private var tempOffset: CGSize = .zero
     @State private var tempScale: CGFloat = 1
@@ -34,6 +35,10 @@ struct UnderlyingImageView: View {
     var body: some View {
         ZStack {
             imageView
+                .resizable()
+                .scaledToFit()
+                .frame(width: initialImageSize.width, height: initialImageSize.height)
+                .animation(.default, value: initialImageSize)
                 .scaleEffect(scale * tempScale)
                 .offset(offset + tempOffset)
                 .rotationEffect(rotation + tempRotation)
@@ -54,7 +59,7 @@ struct UnderlyingImageView: View {
                             tempScale = value
                         }
                         .onEnded { value in
-                            scale = scale * tempScale
+                            scale = max(scale * tempScale, 0.01)
                             tempScale = 1
                         }
                 )
@@ -83,7 +88,8 @@ struct MoveAndScalableImageView_Previews: PreviewProvider {
                 offset: $offset,
                 scale: $scale,
                 rotation: $rotation,
-                image: .init(contentsOfFile: "/Users/laosb/Downloads/png.png")!
+                image: .init(contentsOfFile: "/Users/laosb/Downloads/png.png")!,
+                initialImageSize: .init(width: 200, height: 200)
             )
         }
     }

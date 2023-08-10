@@ -37,6 +37,8 @@ public struct CropImageView<Controls: View>: View {
 
     /// The image to crop.
     public var image: PlatformImage
+    /// The region in which the image is initially fitted in, in points.
+    public var initialImageSize: CGSize
     /// The intended size of the cropped image, in points.
     public var targetSize: CGSize
     /// The intended scale of the cropped image.
@@ -56,12 +58,14 @@ public struct CropImageView<Controls: View>: View {
     /// Create a ``CropImageView`` with a custom ``controls`` view.
     public init(
         image: PlatformImage,
+        initialImageSize: CGSize,
         targetSize: CGSize,
         targetScale: CGFloat = 1,
         onCrop: @escaping (Result<PlatformImage, Error>) -> Void,
         @ViewBuilder controls: @escaping ControlClosure<Controls>
     ) {
         self.image = image
+        self.initialImageSize = initialImageSize
         self.targetSize = targetSize
         self.targetScale = targetScale
         self.onCrop = onCrop
@@ -72,11 +76,13 @@ public struct CropImageView<Controls: View>: View {
     /// The default ``controls`` view is a simple overlay with a checkmark icon on the bottom-trailing corner to trigger crop action.
     public init(
         image: PlatformImage,
+        initialImageSize: CGSize,
         targetSize: CGSize,
         targetScale: CGFloat = 1,
         onCrop: @escaping (Result<PlatformImage, Error>) -> Void
     ) where Controls == DefaultControlsView {
         self.image = image
+        self.initialImageSize = initialImageSize
         self.targetSize = targetSize
         self.targetScale = targetScale
         self.onCrop = onCrop
@@ -95,7 +101,8 @@ public struct CropImageView<Controls: View>: View {
             offset: $offset,
             scale: $scale,
             rotation: $rotation,
-            image: image
+            image: image,
+            initialImageSize: initialImageSize
         )
         .frame(width: targetSize.width, height: targetSize.height)
         if #available(iOS 16.0, macOS 13.0, *) {
@@ -143,7 +150,8 @@ public struct CropImageView<Controls: View>: View {
                 offset: $offset,
                 scale: $scale,
                 rotation: $rotation,
-                image: image
+                image: image,
+                initialImageSize: initialImageSize
             )
             RectHoleShape(size: targetSize)
                 .fill(style: FillStyle(eoFill: true))
@@ -163,6 +171,7 @@ public struct CropImageView<Controls: View>: View {
 
 struct CropImageView_Previews: PreviewProvider {
     struct PreviewView: View {
+        @State private var initialImageSize: CGSize = .init(width: 200, height: 200)
         @State private var targetSize: CGSize = .init(width: 100, height: 100)
         @State private var result: Result<PlatformImage, Error>? = nil
 
@@ -170,9 +179,17 @@ struct CropImageView_Previews: PreviewProvider {
             VStack {
                 CropImageView(
                     image: .init(contentsOfFile: "/Users/laosb/Downloads/png.png")!,
+                    initialImageSize: initialImageSize,
                     targetSize: targetSize
                 ) { result = $0 }
                 Form {
+                    Section {
+                        TextField("Width", value: $initialImageSize.width, formatter: NumberFormatter())
+                        TextField("Height", value: $initialImageSize.height, formatter: NumberFormatter())
+                    } header: {
+                        Text("Initial Image Size")
+                        Text("The image will be fitted into this region.")
+                    }
                     Section {
                         TextField("Width", value: $targetSize.width, formatter: NumberFormatter())
                         TextField("Height", value: $targetSize.height, formatter: NumberFormatter())
@@ -205,7 +222,8 @@ struct CropImageView_Previews: PreviewProvider {
     static var previews: some View {
         PreviewView()
         #if os(macOS)
-            .frame(minHeight: 750)
+            .frame(width: 500)
+            .frame(minHeight: 770)
         #endif
     }
 }
