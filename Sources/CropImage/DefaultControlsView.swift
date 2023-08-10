@@ -16,54 +16,70 @@ public struct DefaultControlsView: View {
     @Binding var rotation: Angle
     var crop: () async -> Void
 
+    var rotateButton: some View {
+        Button {
+            let roundedAngle = Angle.degrees((rotation.degrees / 90).rounded() * 90)
+            withAnimation {
+                rotation = roundedAngle + .degrees(90)
+            }
+        } label: {
+            Label("Rotate", systemImage: "rotate.right")
+                .font(.title2)
+                .foregroundColor(.accentColor)
+                .labelStyle(.iconOnly)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 3)
+                .background(
+                    RoundedRectangle(cornerRadius: 5, style: .continuous)
+                        .fill(.background)
+                )
+        }
+        .buttonStyle(.plain)
+        .padding()
+    }
+
+    var resetButton: some View {
+        Button("Reset") {
+            withAnimation {
+                offset = .zero
+                scale = 1
+                rotation = .zero
+            }
+        }
+    }
+
+    var cropButton: some View {
+        Button { Task {
+            await crop()
+        } } label: {
+            Label("Crop", systemImage: "checkmark.circle.fill")
+                .font(.title2)
+                .foregroundColor(.accentColor)
+                .labelStyle(.iconOnly)
+                .padding(1)
+                .background(
+                    Circle().fill(.background)
+                )
+        }
+        .buttonStyle(.plain)
+        .padding()
+    }
+
     public var body: some View {
         VStack {
             Spacer()
             HStack {
-                Button {
-                    let roundedAngle = Angle.degrees((rotation.degrees / 90).rounded() * 90)
-                    withAnimation {
-                        rotation = roundedAngle + .degrees(90)
-                    }
-                } label: {
-                    Label("Rotate", systemImage: "rotate.right")
-                        .font(.title2)
-                        .foregroundColor(.accentColor)
-                        .labelStyle(.iconOnly)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 3)
-                        .background(
-                            RoundedRectangle(cornerRadius: 5, style: .continuous)
-                                .fill(.background)
-                        )
-                }
-                .buttonStyle(.plain)
-                .padding()
+                rotateButton
                 Spacer()
-                Button("Reset") {
-                    withAnimation {
-                        offset = .zero
-                        scale = 1
-                        rotation = .zero
-                    }
+                if #available(iOS 15.0, macOS 13.0, *) {
+                    resetButton
+                        .buttonStyle(.bordered)
+                        .buttonBorderShape(.roundedRectangle)
+                } else {
+                    resetButton
                 }
-                .buttonStyle(.bordered)
-                .buttonBorderShape(.roundedRectangle)
                 Spacer()
-                Button { Task {
-                    await crop()
-                } } label: {
-                    Label("Crop", systemImage: "checkmark.circle.fill")
-                        .font(.title2)
-                        .foregroundColor(.accentColor)
-                        .labelStyle(.iconOnly)
-                        .padding(1)
-                        .background(
-                            Circle().fill(.background)
-                        )
-                }
-                .buttonStyle(.plain)
-                .padding()
+                cropButton
             }
         }
     }
