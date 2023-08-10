@@ -144,7 +144,7 @@ public struct CropImageView<Controls: View>: View {
         }
     }
 
-    public var body: some View {
+    var underlyingImage: some View {
         UnderlyingImageView(
             offset: $offset,
             scale: $scale,
@@ -152,20 +152,31 @@ public struct CropImageView<Controls: View>: View {
             image: image,
             initialImageSize: initialImageSize
         )
-        .overlay( ZStack {
-            RectHoleShape(size: targetSize)
-                .fill(style: FillStyle(eoFill: true))
-                .foregroundColor(.black.opacity(0.6))
-                .animation(.default, value: targetSize)
-                .allowsHitTesting(false)
-            controls($offset, $scale, $rotation) {
-                do {
-                    onCrop(.success(try crop()))
-                } catch {
-                    onCrop(.failure(error))
-                }
+    }
+
+    var rectHole: some View {
+        RectHoleShape(size: targetSize)
+            .fill(style: FillStyle(eoFill: true))
+            .foregroundColor(.black.opacity(0.6))
+            .animation(.default, value: targetSize)
+            .allowsHitTesting(false)
+    }
+
+    @MainActor var control: some View {
+        controls($offset, $scale, $rotation) {
+            do {
+                onCrop(.success(try crop()))
+            } catch {
+                onCrop(.failure(error))
             }
-        } )
+        }
+    }
+
+    public var body: some View {
+        underlyingImage
+            .clipped()
+            .overlay(rectHole)
+            .overlay(control)
     }
 }
 
