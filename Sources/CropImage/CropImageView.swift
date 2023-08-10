@@ -145,14 +145,14 @@ public struct CropImageView<Controls: View>: View {
     }
 
     public var body: some View {
-        ZStack {
-            UnderlyingImageView(
-                offset: $offset,
-                scale: $scale,
-                rotation: $rotation,
-                image: image,
-                initialImageSize: initialImageSize
-            )
+        UnderlyingImageView(
+            offset: $offset,
+            scale: $scale,
+            rotation: $rotation,
+            image: image,
+            initialImageSize: initialImageSize
+        )
+        .overlay( ZStack {
             RectHoleShape(size: targetSize)
                 .fill(style: FillStyle(eoFill: true))
                 .foregroundColor(.black.opacity(0.6))
@@ -165,7 +165,7 @@ public struct CropImageView<Controls: View>: View {
                     onCrop(.failure(error))
                 }
             }
-        }
+        } )
     }
 }
 
