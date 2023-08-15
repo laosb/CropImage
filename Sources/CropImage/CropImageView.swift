@@ -154,12 +154,8 @@ public struct CropImageView<Controls: View>: View {
         )
     }
 
-    var rectHole: some View {
-        RectHoleShape(size: targetSize)
-            .fill(style: FillStyle(eoFill: true))
-            .foregroundColor(.black.opacity(0.6))
-            .animation(.default, value: targetSize)
-            .allowsHitTesting(false)
+    var cutHole: some View {
+        DefaultCutHoleView(targetSize: targetSize)
     }
 
     @MainActor var control: some View {
@@ -175,7 +171,7 @@ public struct CropImageView<Controls: View>: View {
     public var body: some View {
         underlyingImage
             .clipped()
-            .overlay(rectHole)
+            .overlay(cutHole)
             .overlay(control)
     }
 }

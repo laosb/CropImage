@@ -1,5 +1,5 @@
 //
-//  RectHoleShape.swift
+//  DefaultCutHoleShape.swift
 //
 //
 //  Created by Shibo Lyu on 2023/7/21.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct RectHoleShape: Shape {
+struct DefaultCutHoleShape: Shape {
     var size: CGSize
 
     var animatableData: AnimatablePair<CGFloat, CGFloat> {
@@ -39,10 +39,10 @@ struct RectHoleShape: Shape {
     }
 }
 
-struct RectHoleShape_Previews: PreviewProvider {
+struct DefaultCutHoleShape_Previews: PreviewProvider {
     static var previews: some View {
         VStack {
-            RectHoleShape(size: .init(width: 100, height: 100))
+            DefaultCutHoleShape(size: .init(width: 100, height: 100))
                 .fill(style: FillStyle(eoFill: true))
                 .foregroundColor(.black.opacity(0.6))
         }
