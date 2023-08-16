@@ -19,8 +19,8 @@ struct DefaultCutHoleView: View {
 
     var stroke: some View {
         Rectangle()
-            .strokeBorder(style: .init(lineWidth: 2))
-            .frame(width: targetSize.width + 4, height: targetSize.height + 4)
+            .strokeBorder(style: .init(lineWidth: 1))
+            .frame(width: targetSize.width + 2, height: targetSize.height + 2)
             .foregroundColor(.white)
     }
 

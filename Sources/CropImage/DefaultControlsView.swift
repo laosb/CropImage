@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-/// The default controls view used when creating ``CropImageView`` using ``CropImageView/init(image:targetSize:targetScale:onCrop:)``.
+/// The default controls view used when creating ``CropImageView`` using ``CropImageView/init(image:targetSize:targetScale:fulfillTargetFrame:onCrop:)``.
 ///
 /// It provides basic controls to crop, reset to default cropping & rotation, and rotate the image.
 public struct DefaultControlsView: View {

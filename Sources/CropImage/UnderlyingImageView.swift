@@ -18,11 +18,68 @@ struct UnderlyingImageView: View {
     @Binding var scale: CGFloat
     @Binding var rotation: Angle
     var image: PlatformImage
-    var initialImageSize: CGSize
+    var viewSize: CGSize
+    var targetSize: CGSize
+    var fulfillTargetFrame: Bool
 
     @State private var tempOffset: CGSize = .zero
     @State private var tempScale: CGFloat = 1
     @State private var tempRotation: Angle = .zero
+
+    // When rotated odd multiples of 90 degrees, we need to switch width and height of the image in calculations.
+    var isRotatedOddMultiplesOf90Deg: Bool {
+        rotation != .zero
+        && rotation.degrees.truncatingRemainder(dividingBy: 90) == 0
+        && rotation.degrees.truncatingRemainder(dividingBy: 180) != 0
+    }
+
+    var imageWidth: CGFloat {
+        isRotatedOddMultiplesOf90Deg ? image.size.height : image.size.width
+    }
+    var imageHeight: CGFloat {
+        isRotatedOddMultiplesOf90Deg ? image.size.width : image.size.height
+    }
+
+    var minimumScale: CGFloat {
+        let widthScale = targetSize.width / imageWidth
+        let heightScale = targetSize.height / imageHeight
+        return max(widthScale, heightScale)
+    }
+
+    func xOffsetBounds(at scale: CGFloat) -> ClosedRange<CGFloat> {
+        let width = imageWidth * scale
+        let range = (targetSize.width - width) / 2
+        return range > 0 ? -range ... range : range ... -range
+    }
+    func yOffsetBounds(at scale: CGFloat) -> ClosedRange<CGFloat> {
+        let height = imageHeight * scale
+        let range = (targetSize.height - height) / 2
+        return range > 0 ? -range ... range : range ... -range
+    }
+
+    func adjustToFulfillTargetFrame() {
+        guard fulfillTargetFrame else { return }
+
+        let clampedScale = max(minimumScale, scale)
+        var clampedOffset = offset
+        clampedOffset.width = clampedOffset.width.clamped(to: xOffsetBounds(at: clampedScale))
+        clampedOffset.height = clampedOffset.height.clamped(to: yOffsetBounds(at: clampedScale))
+
+        if clampedScale != scale || clampedOffset != offset {
+            withAnimation {
+                scale = clampedScale
+                offset = clampedOffset
+            }
+        }
+    }
+
+    func setInitialScale(basedOn viewSize: CGSize) {
+        guard viewSize != .zero else { return }
+        let widthScale = viewSize.width / imageWidth
+        let heightScale = viewSize.height / imageHeight
+        print("setInitialScale: widthScale: \(widthScale), heightScale: \(heightScale)")
+        scale = min(widthScale, heightScale)
+    }
 
     var imageView: Image {
 #if os(macOS)
@@ -32,48 +89,58 @@ struct UnderlyingImageView: View {
 #endif
     }
 
+    var interactionView: some View {
+        Color.white.opacity(0.0001)
+            .gesture(dragGesture)
+            .gesture(magnificationgesture)
+            .gesture(rotationGesture)
+    }
+
+    var dragGesture: some Gesture {
+        DragGesture()
+            .onChanged { value in
+                tempOffset = value.translation
+            }
+            .onEnded { value in
+                offset = offset + tempOffset
+                tempOffset = .zero
+                adjustToFulfillTargetFrame()
+            }
+    }
+
+    var magnificationgesture: some Gesture {
+        MagnificationGesture()
+            .onChanged { value in
+                tempScale = value
+            }
+            .onEnded { value in
+                scale = scale * tempScale
+                tempScale = 1
+                adjustToFulfillTargetFrame()
+            }
+    }
+
+    var rotationGesture: some Gesture {
+        RotationGesture()
+            .onChanged { value in
+                tempRotation = value
+            }
+            .onEnded { value in
+                rotation = rotation + tempRotation
+                tempRotation = .zero
+            }
+    }
+
     var body: some View {
-        ZStack {
-            imageView
-                .resizable()
-                .scaledToFit()
-                .frame(width: initialImageSize.width, height: initialImageSize.height)
-                .animation(.default, value: initialImageSize)
-                .scaleEffect(scale * tempScale)
-                .offset(offset + tempOffset)
-                .rotationEffect(rotation + tempRotation)
-            Color.white.opacity(0.0001)
-                .gesture(
-                    DragGesture()
-                        .onChanged { value in
-                            tempOffset = value.translation
-                        }
-                        .onEnded { value in
-                            offset = offset + tempOffset
-                            tempOffset = .zero
-                        }
-                )
-                .gesture(
-                    MagnificationGesture()
-                        .onChanged { value in
-                            tempScale = value
-                        }
-                        .onEnded { value in
-                            scale = max(scale * tempScale, 0.01)
-                            tempScale = 1
-                        }
-                )
-                .gesture(
-                    RotationGesture()
-                        .onChanged { value in
-                            tempRotation = value
-                        }
-                        .onEnded { value in
-                            rotation = rotation + tempRotation
-                            tempRotation = .zero
-                        }
-                )
-        }
+        imageView
+            .scaleEffect(scale * tempScale)
+            .offset(offset + tempOffset)
+            .rotationEffect(rotation + tempRotation)
+            .overlay(interactionView)
+            .onChange(of: viewSize) { newValue in
+                setInitialScale(basedOn: newValue)
+            }
+            .clipped()
     }
 }
 
@@ -89,8 +156,11 @@ struct MoveAndScalableImageView_Previews: PreviewProvider {
                 scale: $scale,
                 rotation: $rotation,
                 image: .init(contentsOfFile: "/Users/laosb/Downloads/png.png")!,
-                initialImageSize: .init(width: 200, height: 200)
+                viewSize: .init(width: 200, height: 100),
+                targetSize: .init(width: 100, height: 100),
+                fulfillTargetFrame: true
             )
+            .frame(width: 200, height: 100)
         }
     }
 
