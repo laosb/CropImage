@@ -12,6 +12,8 @@ Supports iOS 14.0 and above, or macOS Ventura 13.0 and above.
 - Very lightweight
 - (Optionally) bring your own crop UI
 
+Full documentation is available on [Swift Package Index](https://swiftpackageindex.com/laosb/CropImage/main/documentation/cropimage). Be sure to choose the correct version.
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="./Sources/CropImage/Documentation.docc/Resources/macos~dark.png">
   <img alt="Preview on macOS" src="./Sources/CropImage/Documentation.docc/Resources/macos.png">
