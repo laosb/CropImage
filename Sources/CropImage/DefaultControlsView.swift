@@ -19,7 +19,7 @@ public struct DefaultControlsView: View {
     var rotateButton: some View {
         Button {
             let roundedAngle = Angle.degrees((rotation.degrees / 90).rounded() * 90)
-            withAnimation {
+            withAnimation(.interactiveSpring()) {
                 rotation = roundedAngle + .degrees(90)
             }
         } label: {

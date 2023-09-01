@@ -66,7 +66,7 @@ struct UnderlyingImageView: View {
         clampedOffset.height = clampedOffset.height.clamped(to: yOffsetBounds(at: clampedScale))
 
         if clampedScale != scale || clampedOffset != offset {
-            withAnimation {
+            withAnimation(.interactiveSpring()) {
                 scale = clampedScale
                 offset = clampedOffset
             }
@@ -104,7 +104,6 @@ struct UnderlyingImageView: View {
             .onEnded { value in
                 offset = offset + tempOffset
                 tempOffset = .zero
-                adjustToFulfillTargetFrame()
             }
     }
 
@@ -116,7 +115,6 @@ struct UnderlyingImageView: View {
             .onEnded { value in
                 scale = scale * tempScale
                 tempScale = 1
-                adjustToFulfillTargetFrame()
             }
     }
 
@@ -133,14 +131,23 @@ struct UnderlyingImageView: View {
 
     var body: some View {
         imageView
+            .rotationEffect(rotation + tempRotation)
             .scaleEffect(scale * tempScale)
             .offset(offset + tempOffset)
-            .rotationEffect(rotation + tempRotation)
             .overlay(interactionView)
+            .clipped()
             .onChange(of: viewSize) { newValue in
                 setInitialScale(basedOn: newValue)
             }
-            .clipped()
+            .onChange(of: scale) { _ in
+                adjustToFulfillTargetFrame()
+            }
+            .onChange(of: offset) { _ in
+                adjustToFulfillTargetFrame()
+            }
+            .onChange(of: rotation) { _ in
+                adjustToFulfillTargetFrame()
+            }
     }
 }
 
