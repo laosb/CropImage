@@ -11,13 +11,26 @@ import UIKit
 #endif
 
 /// A view that allows the user to crop an image.
-public struct CropImageView<Controls: View>: View {
+public struct CropImageView<Controls: View, CutHole: View>: View {
+    /// Defines a custom view overlaid on the image cropper.
+    ///
+    /// - Parameters:
+    ///   - offset: The offset binding of the image.
+    ///   - scale: The scale binding of the image.
+    ///   - rotation: The rotation binding of the image.
+    ///   - crop: An async function to trigger crop action. Result will be delivered via ``onCrop``.
     public typealias ControlClosure<Controls> = (
         _ offset: Binding<CGSize>,
         _ scale: Binding<CGFloat>,
         _ rotation: Binding<Angle>,
         _ crop: @escaping () async -> ()
     ) -> Controls
+
+    /// Defines custom view that indicates the cut hole to users.
+    ///
+    /// - Parameters:
+    ///   - targetSize: The size of the cut hole.
+    public typealias CutHoleClosure<CutHole> = (_ targetSize: CGSize) -> CutHole
 
     /// Errors that could happen during the cropping process.
     public enum CropError: Error {
@@ -53,13 +66,26 @@ public struct CropImageView<Controls: View>: View {
     ///
     /// The error should be a ``CropError``.
     public var onCrop: (Result<PlatformImage, Error>) -> Void
-    /// A custom view overlaid on the image cropper.
-    ///
-    /// - Parameters:
-    ///   - crop: An async function to trigger crop action. Result will be delivered via ``onCrop``.
-    public var controls: ControlClosure<Controls>
-
-    /// Create a ``CropImageView`` with a custom ``controls`` view.
+    var controls: ControlClosure<Controls>
+    var cutHole: CutHoleClosure<CutHole>
+    /// Create a ``CropImageView`` with a custom controls view and a custom cut hole.
+    public init(
+        image: PlatformImage,
+        targetSize: CGSize,
+        targetScale: CGFloat = 1,
+        fulfillTargetFrame: Bool = true,
+        onCrop: @escaping (Result<PlatformImage, Error>) -> Void,
+        @ViewBuilder controls: @escaping ControlClosure<Controls>,
+        @ViewBuilder cutHole: @escaping CutHoleClosure<CutHole>
+    ) {
+        self.image = image
+        self.targetSize = targetSize
+        self.targetScale = targetScale
+        self.onCrop = onCrop
+        self.controls = controls
+        self.cutHole = cutHole
+    }
+    /// Create a ``CropImageView`` with a custom controls view and default cut hole.
     public init(
         image: PlatformImage,
         targetSize: CGSize,
@@ -67,29 +93,33 @@ public struct CropImageView<Controls: View>: View {
         fulfillTargetFrame: Bool = true,
         onCrop: @escaping (Result<PlatformImage, Error>) -> Void,
         @ViewBuilder controls: @escaping ControlClosure<Controls>
-    ) {
+    ) where CutHole == DefaultCutHoleView {
         self.image = image
         self.targetSize = targetSize
         self.targetScale = targetScale
         self.onCrop = onCrop
         self.controls = controls
+        self.cutHole = { targetSize in
+            DefaultCutHoleView(targetSize: targetSize)
+        }
     }
-    /// Create a ``CropImageView`` with the default ``controls`` view.
-    ///
-    /// The default ``controls`` view is a simple overlay with a checkmark icon on the bottom-trailing corner to trigger crop action.
+    /// Create a ``CropImageView`` with default UI elements.
     public init(
         image: PlatformImage,
         targetSize: CGSize,
         targetScale: CGFloat = 1,
         fulfillTargetFrame: Bool = true,
         onCrop: @escaping (Result<PlatformImage, Error>) -> Void
-    ) where Controls == DefaultControlsView {
+    ) where Controls == DefaultControlsView, CutHole == DefaultCutHoleView {
         self.image = image
         self.targetSize = targetSize
         self.targetScale = targetScale
         self.onCrop = onCrop
         self.controls = { $offset, $scale, $rotation, crop in
             DefaultControlsView(offset: $offset, scale: $scale, rotation: $rotation, crop: crop)
+        }
+        self.cutHole = { targetSize in
+            DefaultCutHoleView(targetSize: targetSize)
         }
     }
 
@@ -164,10 +194,6 @@ public struct CropImageView<Controls: View>: View {
         .clipped()
     }
 
-    var cutHole: some View {
-        DefaultCutHoleView(targetSize: targetSize)
-    }
-
     var viewSizeReadingView: some View {
         GeometryReader { geo in
             Rectangle()
@@ -192,7 +218,7 @@ public struct CropImageView<Controls: View>: View {
     }
 
     public var body: some View {
-        cutHole
+        cutHole(targetSize)
             .background(underlyingImage)
             .background(viewSizeReadingView)
             .overlay(control)

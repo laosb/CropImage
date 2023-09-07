@@ -9,6 +9,7 @@ import SwiftUI
 
 struct DefaultCutHoleShape: Shape {
     var size: CGSize
+    var isCircular = false
 
     var animatableData: AnimatablePair<CGFloat, CGFloat> {
         get { .init(size.width, size.height) }
@@ -30,10 +31,14 @@ struct DefaultCutHoleShape: Shape {
         ), size: size)
 
         path.move(to: newRect.origin)
-        path.addLine(to: .init(x: newRect.maxX, y: newRect.minY))
-        path.addLine(to: .init(x: newRect.maxX, y: newRect.maxY))
-        path.addLine(to: .init(x: newRect.minX, y: newRect.maxY))
-        path.addLine(to: newRect.origin)
+        if isCircular {
+            path.addEllipse(in: newRect)
+        } else {
+            path.addLine(to: .init(x: newRect.maxX, y: newRect.minY))
+            path.addLine(to: .init(x: newRect.maxX, y: newRect.maxY))
+            path.addLine(to: .init(x: newRect.minX, y: newRect.maxY))
+            path.addLine(to: newRect.origin)
+        }
         path.closeSubpath()
         return Path(path)
     }
@@ -46,6 +51,13 @@ struct DefaultCutHoleShape_Previews: PreviewProvider {
                 .fill(style: FillStyle(eoFill: true))
                 .foregroundColor(.black.opacity(0.6))
         }
+        .previewDisplayName("Default")
+        VStack {
+            DefaultCutHoleShape(size: .init(width: 100, height: 100), isCircular: true)
+                .fill(style: FillStyle(eoFill: true))
+                .foregroundColor(.black.opacity(0.6))
+        }
+        .previewDisplayName("Circular")
     }
 }
 

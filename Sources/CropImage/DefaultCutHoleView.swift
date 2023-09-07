@@ -7,27 +7,46 @@
 
 import SwiftUI
 
-struct DefaultCutHoleView: View {
+/// The default cut hole view. Stroke and mask color can be adjusted.
+public struct DefaultCutHoleView: View {
     var targetSize: CGSize
-    var showStroke = true
+    var strokeWidth: CGFloat
+    var maskColor: Color
+    var isCircular: Bool
+
+    /// Initialize a default rectangular or circular cut hole view with specified target size, stroke width and mask color.
+    public init(
+        targetSize: CGSize,
+        isCircular: Bool = false,
+        strokeWidth: CGFloat = 1,
+        maskColor: Color = .black.opacity(0.6)
+    ) {
+        self.targetSize = targetSize
+        self.strokeWidth = strokeWidth
+        self.maskColor = maskColor
+        self.isCircular = isCircular
+    }
 
     var background: some View {
         DefaultCutHoleShape(size: targetSize)
             .fill(style: FillStyle(eoFill: true))
-            .foregroundColor(.black.opacity(0.6))
+            .foregroundColor(maskColor)
     }
 
     var stroke: some View {
         Rectangle()
-            .strokeBorder(style: .init(lineWidth: 1))
-            .frame(width: targetSize.width + 2, height: targetSize.height + 2)
+            .strokeBorder(style: .init(lineWidth: strokeWidth))
+            .frame(
+                width: targetSize.width + strokeWidth * 2,
+                height: targetSize.height + strokeWidth * 2
+            )
             .foregroundColor(.white)
     }
 
-    var body: some View {
+    public var body: some View {
         background
             .allowsHitTesting(false)
-            .overlay(showStroke ? stroke : nil)
+            .overlay(strokeWidth > 0 ? stroke : nil)
             .animation(.default, value: targetSize)
     }
 }
