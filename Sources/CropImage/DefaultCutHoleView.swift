@@ -33,9 +33,19 @@ public struct DefaultCutHoleView: View {
             .foregroundColor(maskColor)
     }
 
+    @ViewBuilder
+    var strokeShape: some View {
+        if isCircular {
+            Circle()
+                .strokeBorder(style: .init(lineWidth: strokeWidth))
+        } else {
+            Rectangle()
+                .strokeBorder(style: .init(lineWidth: strokeWidth))
+        }
+    }
+
     var stroke: some View {
-        Rectangle()
-            .strokeBorder(style: .init(lineWidth: strokeWidth))
+        strokeShape
             .frame(
                 width: targetSize.width + strokeWidth * 2,
                 height: targetSize.height + strokeWidth * 2
@@ -54,5 +64,8 @@ public struct DefaultCutHoleView: View {
 struct DefaultCutHoleView_Previews: PreviewProvider {
     static var previews: some View {
         DefaultCutHoleView(targetSize: .init(width: 100, height: 100))
+            .previewDisplayName("Default")
+        DefaultCutHoleView(targetSize: .init(width: 100, height: 100), isCircular: true)
+            .previewDisplayName("Circular")
     }
 }
