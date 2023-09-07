@@ -28,7 +28,7 @@ public struct DefaultCutHoleView: View {
     }
 
     var background: some View {
-        DefaultCutHoleShape(size: targetSize)
+        DefaultCutHoleShape(size: targetSize, isCircular: isCircular)
             .fill(style: FillStyle(eoFill: true))
             .foregroundColor(maskColor)
     }
