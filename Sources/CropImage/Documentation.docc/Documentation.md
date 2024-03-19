@@ -2,9 +2,9 @@
 
 A simple SwiftUI view where user can move and resize an image to a pre-defined size.
 
-Supports iOS 14.0 and above, or macOS Ventura 13.0 and above.
+Supports iOS 14.0 and above, visionOS 1.0 and above or macOS Ventura 13.0 and above.
 
-- Supports both iOS and macOS
+- Supports iOS, visionOS and macOS
 - Use `ImageRenderer` to render the cropped image, when possible
 - Very lightweight
 - (Optionally) bring your own crop UI
