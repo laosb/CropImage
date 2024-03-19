@@ -25,7 +25,9 @@ public struct DefaultControlsView: View {
         } label: {
             Label("Rotate", systemImage: "rotate.right")
                 .font(.title2)
+                #if !os(visionOS)
                 .foregroundColor(.accentColor)
+                #endif
                 .labelStyle(.iconOnly)
                 .padding(.horizontal, 6)
                 .padding(.vertical, 3)
@@ -58,7 +60,9 @@ public struct DefaultControlsView: View {
         } } label: {
             Label("Crop", systemImage: "checkmark.circle.fill")
                 .font(.title2)
+                #if !os(visionOS)
                 .foregroundColor(.accentColor)
+                #endif
                 .labelStyle(.iconOnly)
                 .padding(1)
                 #if !os(visionOS)
