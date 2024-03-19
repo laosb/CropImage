@@ -84,7 +84,7 @@ struct UnderlyingImageView: View {
     var imageView: Image {
 #if os(macOS)
         Image(nsImage: image)
-#elseif os(iOS)
+#else
         Image(uiImage: image)
 #endif
     }

@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-#if os(iOS)
+#if !os(macOS)
 import UIKit
 #endif
 
@@ -144,13 +144,13 @@ public struct CropImageView<Controls: View, CutHole: View>: View {
         if #available(iOS 16.0, macOS 13.0, *) {
             let renderer = ImageRenderer(content: snapshotView)
             renderer.scale = targetScale
-#if os(iOS)
+#if !os(macOS)
             if let image = renderer.uiImage {
                 return image
             } else {
                 throw CropError.imageRendererReturnedNil
             }
-#elseif os(macOS)
+#else
             if let image = renderer.nsImage {
                 return image
             } else {
@@ -160,7 +160,7 @@ public struct CropImageView<Controls: View, CutHole: View>: View {
         } else {
 #if os(macOS)
             fatalError("Cropping is not supported on macOS versions before Ventura 13.0.")
-#elseif os(iOS)
+#else
             let window = UIWindow(frame: CGRect(origin: .zero, size: targetSize))
             let hosting = UIHostingController(rootView: snapshotView)
             hosting.view.frame = window.frame
@@ -250,7 +250,7 @@ struct CropImageView_Previews: PreviewProvider {
                             case let .success(croppedImage):
 #if os(macOS)
                                 Image(nsImage: croppedImage)
-#elseif os(iOS)
+#else
                                 Image(uiImage: croppedImage)
 #endif
                             case let .failure(error):
