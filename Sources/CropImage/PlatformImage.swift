@@ -13,7 +13,7 @@ import AppKit
 ///
 /// On macOS, it's `NSImage` and on iOS it's `UIImage`.
 public typealias PlatformImage = NSImage
-#elseif os(iOS)
+#else
 import UIKit
 /// The image object type, aliased to each platform.
 ///
