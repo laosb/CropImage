@@ -29,12 +29,16 @@ public struct DefaultControlsView: View {
                 .labelStyle(.iconOnly)
                 .padding(.horizontal, 6)
                 .padding(.vertical, 3)
+                #if !os(visionOS)
                 .background(
                     RoundedRectangle(cornerRadius: 5, style: .continuous)
                         .fill(.background)
                 )
+                #endif
         }
+        #if !os(visionOS)
         .buttonStyle(.plain)
+        #endif
         .padding()
     }
 
@@ -57,11 +61,15 @@ public struct DefaultControlsView: View {
                 .foregroundColor(.accentColor)
                 .labelStyle(.iconOnly)
                 .padding(1)
+                #if !os(visionOS)
                 .background(
                     Circle().fill(.background)
                 )
+                #endif
         }
+        #if !os(visionOS)
         .buttonStyle(.plain)
+        #endif
         .padding()
     }
 
