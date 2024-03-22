@@ -141,7 +141,7 @@ public struct CropImageView<Controls: View, CutHole: View>: View {
             fulfillTargetFrame: fulfillTargetFrame
         )
         .frame(width: targetSize.width, height: targetSize.height)
-        if #available(iOS 16.0, macOS 13.0, *) {
+        if #available(iOS 16.0, macOS 13.0, visionOS 1.0, *) {
             let renderer = ImageRenderer(content: snapshotView)
             renderer.scale = targetScale
 #if !os(macOS)
