@@ -160,7 +160,7 @@ public struct CropImageView<Controls: View, CutHole: View>: View {
         } else {
 #if os(macOS)
             fatalError("Cropping is not supported on macOS versions before Ventura 13.0.")
-#else
+#elseif os(iOS)
             let window = UIWindow(frame: CGRect(origin: .zero, size: targetSize))
             let hosting = UIHostingController(rootView: snapshotView)
             hosting.view.frame = window.frame
