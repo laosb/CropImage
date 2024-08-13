@@ -25,6 +25,9 @@ struct UnderlyingImageView: View {
     @State private var tempOffset: CGSize = .zero
     @State private var tempScale: CGFloat = 1
     @State private var tempRotation: Angle = .zero
+    #if os(macOS)
+    @State private var isHovering: Bool = false
+    #endif
 
     // When rotated odd multiples of 90 degrees, we need to switch width and height of the image in calculations.
     var isRotatedOddMultiplesOf90Deg: Bool {
@@ -84,7 +87,9 @@ struct UnderlyingImageView: View {
     private func setupScrollMonitor() {
         #if os(macOS)
         NSEvent.addLocalMonitorForEvents(matching: .scrollWheel) {event in
-            scale = scale + event.scrollingDeltaY/1000
+            if isHovering {
+                scale = scale + event.scrollingDeltaY/1000
+            }
             return event
         }
         #endif
@@ -160,6 +165,11 @@ struct UnderlyingImageView: View {
             .onChange(of: rotation) { _ in
                 adjustToFulfillTargetFrame()
             }
+            #if os(macOS)
+            .onHover { hovering in
+                isHovering = hovering
+            }
+            #endif
     }
 }
 
