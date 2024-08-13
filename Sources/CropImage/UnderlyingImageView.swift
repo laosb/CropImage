@@ -81,6 +81,15 @@ struct UnderlyingImageView: View {
         scale = min(widthScale, heightScale)
     }
 
+    private func setupScrollMonitor() {
+        #if os(macOS)
+        NSEvent.addLocalMonitorForEvents(matching: .scrollWheel) {event in
+            scale = scale + event.scrollingDeltaY/1000
+            return event
+        }
+        #endif
+    }
+
     var imageView: Image {
 #if os(macOS)
         Image(nsImage: image)
@@ -94,6 +103,9 @@ struct UnderlyingImageView: View {
             .gesture(dragGesture)
             .gesture(magnificationgesture)
             .gesture(rotationGesture)
+            .onAppear {
+                setupScrollMonitor()
+            }
     }
 
     var dragGesture: some Gesture {
