@@ -25,6 +25,7 @@ struct UnderlyingImageView: View {
     @State private var tempOffset: CGSize = .zero
     @State private var tempScale: CGFloat = 1
     @State private var tempRotation: Angle = .zero
+    @State private var scrolling: Bool = false
     #if os(macOS)
     @State private var isHovering: Bool = false
     #endif
@@ -69,9 +70,15 @@ struct UnderlyingImageView: View {
         clampedOffset.height = clampedOffset.height.clamped(to: yOffsetBounds(at: clampedScale))
 
         if clampedScale != scale || clampedOffset != offset {
-            withAnimation(.interactiveSpring()) {
+            if scrolling {
                 scale = clampedScale
                 offset = clampedOffset
+                scrolling = false
+            } else {
+                withAnimation(.interactiveSpring()) {
+                    scale = clampedScale
+                    offset = clampedOffset
+                }
             }
         }
     }
@@ -88,6 +95,7 @@ struct UnderlyingImageView: View {
         #if os(macOS)
         NSEvent.addLocalMonitorForEvents(matching: .scrollWheel) {event in
             if isHovering {
+                scrolling = true
                 scale = scale + event.scrollingDeltaY/1000
             }
             return event
