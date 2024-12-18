@@ -26,5 +26,6 @@ let package = Package(
         .target(
             name: "CropImage",
             dependencies: [])
-    ]
+    ],
+    swiftLanguageVersions: [.version("6"), .v5]
 )

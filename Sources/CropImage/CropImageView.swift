@@ -19,7 +19,7 @@ public struct CropImageView<Controls: View, CutHole: View>: View {
     ///   - scale: The scale binding of the image.
     ///   - rotation: The rotation binding of the image.
     ///   - crop: An async function to trigger crop action. Result will be delivered via ``onCrop``.
-    public typealias ControlClosure<Controls> = (
+    public typealias ControlClosure = (
         _ offset: Binding<CGSize>,
         _ scale: Binding<CGFloat>,
         _ rotation: Binding<Angle>,
@@ -30,7 +30,7 @@ public struct CropImageView<Controls: View, CutHole: View>: View {
     ///
     /// - Parameters:
     ///   - targetSize: The size of the cut hole.
-    public typealias CutHoleClosure<CutHole> = (_ targetSize: CGSize) -> CutHole
+    public typealias CutHoleClosure = (_ targetSize: CGSize) -> CutHole
 
     /// Errors that could happen during the cropping process.
     public enum CropError: Error {
@@ -66,8 +66,8 @@ public struct CropImageView<Controls: View, CutHole: View>: View {
     ///
     /// The error should be a ``CropError``.
     public var onCrop: (Result<PlatformImage, Error>) -> Void
-    var controls: ControlClosure<Controls>
-    var cutHole: CutHoleClosure<CutHole>
+    var controls: ControlClosure
+    var cutHole: CutHoleClosure
     /// Create a ``CropImageView`` with a custom controls view and a custom cut hole.
     public init(
         image: PlatformImage,
@@ -75,8 +75,8 @@ public struct CropImageView<Controls: View, CutHole: View>: View {
         targetScale: CGFloat = 1,
         fulfillTargetFrame: Bool = true,
         onCrop: @escaping (Result<PlatformImage, Error>) -> Void,
-        @ViewBuilder controls: @escaping ControlClosure<Controls>,
-        @ViewBuilder cutHole: @escaping CutHoleClosure<CutHole>
+        @ViewBuilder controls: @escaping ControlClosure,
+        @ViewBuilder cutHole: @escaping CutHoleClosure
     ) {
         self.image = image
         self.targetSize = targetSize
@@ -92,7 +92,7 @@ public struct CropImageView<Controls: View, CutHole: View>: View {
         targetScale: CGFloat = 1,
         fulfillTargetFrame: Bool = true,
         onCrop: @escaping (Result<PlatformImage, Error>) -> Void,
-        @ViewBuilder controls: @escaping ControlClosure<Controls>
+        @ViewBuilder controls: @escaping ControlClosure
     ) where CutHole == DefaultCutHoleView {
         self.image = image
         self.targetSize = targetSize
