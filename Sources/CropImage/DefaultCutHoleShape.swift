@@ -44,20 +44,18 @@ struct DefaultCutHoleShape: Shape {
     }
 }
 
-struct DefaultCutHoleShape_Previews: PreviewProvider {
-    static var previews: some View {
-        VStack {
-            DefaultCutHoleShape(size: .init(width: 100, height: 100))
-                .fill(style: FillStyle(eoFill: true))
-                .foregroundColor(.black.opacity(0.6))
-        }
-        .previewDisplayName("Default")
-        VStack {
-            DefaultCutHoleShape(size: .init(width: 100, height: 100), isCircular: true)
-                .fill(style: FillStyle(eoFill: true))
-                .foregroundColor(.black.opacity(0.6))
-        }
-        .previewDisplayName("Circular")
+#Preview("Default") {
+    VStack {
+        DefaultCutHoleShape(size: .init(width: 100, height: 100))
+            .fill(style: FillStyle(eoFill: true))
+            .foregroundColor(.black.opacity(0.6))
     }
 }
 
+#Preview("Circular") {
+    VStack {
+        DefaultCutHoleShape(size: .init(width: 100, height: 100), isCircular: true)
+            .fill(style: FillStyle(eoFill: true))
+            .foregroundColor(.black.opacity(0.6))
+    }
+}

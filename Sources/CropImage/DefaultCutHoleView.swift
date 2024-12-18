@@ -61,11 +61,10 @@ public struct DefaultCutHoleView: View {
     }
 }
 
-struct DefaultCutHoleView_Previews: PreviewProvider {
-    static var previews: some View {
-        DefaultCutHoleView(targetSize: .init(width: 100, height: 100))
-            .previewDisplayName("Default")
-        DefaultCutHoleView(targetSize: .init(width: 100, height: 100), isCircular: true)
-            .previewDisplayName("Circular")
-    }
+#Preview("Default") {
+    DefaultCutHoleView(targetSize: .init(width: 100, height: 100))
+}
+
+#Preview("Circular") {
+    DefaultCutHoleView(targetSize: .init(width: 100, height: 100), isCircular: true)
 }

@@ -225,15 +225,15 @@ public struct CropImageView<Controls: View, CutHole: View>: View {
     }
 }
 
-struct CropImageView_Previews: PreviewProvider {
+#Preview {
     struct PreviewView: View {
         @State private var targetSize: CGSize = .init(width: 100, height: 100)
         @State private var result: Result<PlatformImage, Error>? = nil
-
+        
         var body: some View {
             VStack {
                 CropImageView(
-                    image: .init(contentsOfFile: "/Users/laosb/Downloads/png.png")!,
+                    image: .init(contentsOf: URL(string: "file:///System/Library/Desktop%20Pictures/Hello%20Metallic%20Blue.heic")!)!,
                     targetSize: targetSize
                 ) {
                     result = $0
@@ -262,18 +262,16 @@ struct CropImageView_Previews: PreviewProvider {
                         }
                     } header: { Text("Result") }
                 }
-                #if os(macOS)
+#if os(macOS)
                 .formStyle(.grouped)
-                #endif
+#endif
             }
         }
     }
-
-    static var previews: some View {
-        PreviewView()
-        #if os(macOS)
-            .frame(width: 500)
-            .frame(minHeight: 600)
-        #endif
-    }
+    
+    return PreviewView()
+#if os(macOS)
+        .frame(width: 500)
+        .frame(minHeight: 600)
+#endif
 }

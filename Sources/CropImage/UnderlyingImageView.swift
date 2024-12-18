@@ -191,18 +191,18 @@ struct UnderlyingImageView: View {
     }
 }
 
-struct MoveAndScalableImageView_Previews: PreviewProvider {
+#Preview {
     struct PreviewView: View {
         @State private var offset: CGSize = .zero
         @State private var scale: CGFloat = 1
         @State private var rotation: Angle = .zero
-
+        
         var body: some View {
             UnderlyingImageView(
                 offset: $offset,
                 scale: $scale,
                 rotation: $rotation,
-                image: .init(contentsOfFile: "/Users/laosb/Downloads/png.png")!,
+                image: .init(contentsOf: URL(string: "file:///System/Library/Desktop%20Pictures/Hello%20Metallic%20Blue.heic")!)!,
                 viewSize: .init(width: 200, height: 100),
                 targetSize: .init(width: 100, height: 100),
                 fulfillTargetFrame: true
@@ -210,8 +210,6 @@ struct MoveAndScalableImageView_Previews: PreviewProvider {
             .frame(width: 200, height: 100)
         }
     }
-
-    static var previews: some View {
-        PreviewView()
-    }
+    
+    return PreviewView()
 }
