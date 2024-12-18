@@ -26,9 +26,10 @@ struct UnderlyingImageView: View {
     @State private var tempScale: CGFloat = 1
     @State private var tempRotation: Angle = .zero
     @State private var scrolling: Bool = false
-    #if os(macOS)
-    @State private var isHovering: Bool = false
-    #endif
+#if os(macOS)
+    @State private var hovering: Bool = false
+    @State private var scrollMonitor: Any?
+#endif
 
     // When rotated odd multiples of 90 degrees, we need to switch width and height of the image in calculations.
     var isRotatedOddMultiplesOf90Deg: Bool {
@@ -91,17 +92,23 @@ struct UnderlyingImageView: View {
         scale = min(widthScale, heightScale)
     }
 
+#if os(macOS)
     private func setupScrollMonitor() {
-        #if os(macOS)
-        NSEvent.addLocalMonitorForEvents(matching: .scrollWheel) {event in
-            if isHovering {
+      scrollMonitor = NSEvent.addLocalMonitorForEvents(matching: .scrollWheel) { event in
+            if hovering {
                 scrolling = true
-                scale = scale + event.scrollingDeltaY/1000
+                scale = scale + event.scrollingDeltaY / 1000
             }
             return event
         }
-        #endif
     }
+  
+    private func removeScrollMonitor() {
+        if let scrollMonitor {
+            NSEvent.removeMonitor(scrollMonitor)
+        }
+    }
+#endif
 
     var imageView: Image {
 #if os(macOS)
@@ -116,9 +123,14 @@ struct UnderlyingImageView: View {
             .gesture(dragGesture)
             .gesture(magnificationgesture)
             .gesture(rotationGesture)
+#if os(macOS)
             .onAppear {
                 setupScrollMonitor()
             }
+            .onDisappear {
+                removeScrollMonitor()
+            }
+#endif
     }
 
     var dragGesture: some Gesture {
@@ -173,11 +185,9 @@ struct UnderlyingImageView: View {
             .onChange(of: rotation) { _ in
                 adjustToFulfillTargetFrame()
             }
-            #if os(macOS)
-            .onHover { hovering in
-                isHovering = hovering
-            }
-            #endif
+#if os(macOS)
+            .onHover { hovering = $0 }
+#endif
     }
 }
 
