@@ -233,7 +233,7 @@ public struct CropImageView<Controls: View, CutHole: View>: View {
         var body: some View {
             VStack {
                 CropImageView(
-                    image: .init(contentsOf: URL(string: "file:///System/Library/Desktop%20Pictures/Hello%20Metallic%20Blue.heic")!)!,
+                    image: .previewImage,
                     targetSize: targetSize
                 ) {
                     result = $0
