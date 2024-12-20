@@ -14,7 +14,7 @@ import AppKit
 /// On macOS, it's `NSImage` and on iOS/visionOS it's `UIImage`.
 public typealias PlatformImage = NSImage
 extension PlatformImage {
-    static let previewImage: PlatformImage = .init(contentsOf: URL(string: "file:///System/Library/Desktop%20Pictures/Hello%20Metallic%20Blue.heic")!)!
+  @MainActor static let previewImage: PlatformImage = .init(contentsOf: URL(string: "file:///System/Library/Desktop%20Pictures/Hello%20Metallic%20Blue.heic")!)!
 }
 #else
 import UIKit
